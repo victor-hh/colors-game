@@ -52,7 +52,6 @@ const char *fragmentShaderSource = "#version 330 core\n"
     "}\0";
 
 int main() {
-    // printf("INICIALIZANDO O PROGRAMA");
     cout << "INICIALIZANDO O PROGRAMA" << endl;
 
     // Inicializar GLFW e definir versão
@@ -100,6 +99,7 @@ int main() {
     numberOfBlockPerColorIndex.resize(numberOfColors);
 
     // Criar blocos
+    // Atualiza vetor com numero de usos de cada cor para podermos fazer a pontuação
     blocks.resize(rows * cols);
     for (int i = 0; i < blocks.size(); ++i) {
         int selectedColorIndex = rand() % colorPalette.size();
@@ -125,7 +125,6 @@ int main() {
 
     for (int i = 0; i < rows; ++i) {
         for (int j = 0; j < cols; ++j) {
-            // Definir posição dos 4 vértices de cada quadrado (normalizado para OpenGL)
             float x = -1.0f + j * blockWidth;
             float y = 1.0f - i * blockHeight;
 
@@ -160,11 +159,9 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
 
-        // Limpar tela
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // Usar o programa de shader
         glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
 
@@ -190,22 +187,18 @@ int main() {
             blockVertices.insert(blockVertices.end(), { blockX + blockWidth, blockY - blockHeight, color[0], color[1], color[2] });
             blockVertices.insert(blockVertices.end(), { blockX, blockY - blockHeight, color[0], color[1], color[2] });
 
-            // Atualizar o VBO com os vértices do bloco
             glBindBuffer(GL_ARRAY_BUFFER, VBO);
             glBufferSubData(GL_ARRAY_BUFFER, i * 6 * 5 * sizeof(float), blockVertices.size() * sizeof(float), blockVertices.data());
 
-            // Desenhar os blocos
             glDrawArrays(GL_TRIANGLES, i * 6, 6);
         }
 
         glBindVertexArray(0);
 
-        // Swap buffers e poll events
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    // Limpar recursos
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteProgram(shaderProgram);
@@ -215,6 +208,7 @@ int main() {
 }
 
 // Função para gerar uma paleta de cores dinamicamente
+// A ideia é ter um vetor com cores pré definidas, e depois alocar estar cores para os blocos
 vector<vector<float>> generateColorPalette(int numberOfColors) {
     vector<vector<float>> palette;
     srand(static_cast<unsigned int>(time(0)));
@@ -269,7 +263,6 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
         if (clickedIndex != -1) {
             cout << "colorIndex: " << blocks[clickedIndex].colorIndex << endl;
             cout << "Numero de blocos apagados: " << numberOfBlockPerColorIndex[blocks[clickedIndex].colorIndex] << endl;
-            // printf("colorIndex: %i", blocks[clickedIndex].colorIndex);
             updateBlockColors(blocks[clickedIndex].colorIndex);
         }
     }
@@ -279,7 +272,7 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 void updateBlockColors(int clickedColorIndex) {
     for (auto &block : blocks) {
         if (block.colorIndex == clickedColorIndex) {
-            block.selecionado = true; // Marcar bloco como selecionado
+            block.selecionado = true;
         }
     }
 }
